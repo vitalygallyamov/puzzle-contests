@@ -43,7 +43,7 @@ function MainLink({ icon, color, label, href }: MainLinkProps) {
 }
 
 const data = [
-  { icon: <IconNews size="1rem" />, color: 'pink', label: 'Contests', href: '/contests' },
+  { icon: <IconNews size="1rem" />, color: 'pink', label: 'Contests', href: '/' },
   { icon: <IconGraph size="1rem" />, color: 'blue', label: 'Stats', href: '/stats' },
 ];
 
