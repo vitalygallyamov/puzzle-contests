@@ -1,11 +1,15 @@
 import {IconCalendarDue, IconUsers, IconTrophy} from '@tabler/icons-react';
 import {Card, Group, Text, Badge, Button, Space, Flex, ThemeIcon} from "@mantine/core";
 
-export default function ContestCard() {
+interface ICardProps {
+    name: string;
+}
+
+export default function ContestCard(props: ICardProps) {
     return (
         <Card shadow="sm" padding="lg" radius="md" withBorder>
             <Group position="apart" mb="xs">
-                <Text weight={500}>Buy and hold 10 PUZZLE</Text>
+                <Text weight={500}>{props.name}</Text>
                 <Flex align='center'>
                     <Badge color="red" variant="dot">
                         <Flex align='center'>
