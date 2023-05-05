@@ -1,10 +1,16 @@
-import { useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Title, TextInput, Space, Box, Textarea, Button, NumberInput, Group, Select, Divider, SimpleGrid } from "@mantine/core";
 import { DateTimePicker } from '@mantine/dates';
 
-import {Tasks} from '@/components/tasks';
+import {getTask, Tasks} from '@/components/tasks';
+import { create } from '@/bl/contest';
+import { SignerContext } from '@/context/SignerContext';
+import { transactionById } from '@waves/waves-transactions/dist/nodeInteraction';
+import { ApiBase } from '@/data/common';
 
 export default function Create() {
+    const {authData} = useContext(SignerContext);
+
     const [contestTasksIds, setContestTasksIds] = useState<any[]>([]);
     const [selectedTask, setSelectedTask] = useState<string | null>(null);
     const defDate = useMemo(() => {
@@ -17,12 +23,24 @@ export default function Create() {
         return d;
     }, []);
 
-    const removeTask = (task: any) => {
-        const newTasks = contestTasksIds.filter((t, i) => {
-            console.log(t.key, task.key);
-            return t.key !== task.key;
+    const removeTaskByIndex = (index: number) => {
+        setContestTasksIds((prev) => {
+            return prev.filter((item, i) => i !== index)
         });
-        setContestTasksIds(newTasks);
+    }
+
+    (async() => {
+        const t = await transactionById('Cj5NuHRjGC4wkBozwjua8zzvwbVbA5ZcYxbXgqNn6fjk', ApiBase);
+        console.log(t);
+    })();
+
+    const submit = () => {
+        if (authData.signer) {
+            create(authData.signer, 'test', 'desc', defDate, [{
+                assetId: null,
+                amount: 1000
+            }]);
+        }
     }
     return (
         <Box>
@@ -91,20 +109,23 @@ export default function Create() {
                     if (selectedTask) {
                         const findTask = Tasks.find(task => task.id === selectedTask);
                         if (findTask) {
-                            setContestTasksIds([...contestTasksIds, {...findTask, key: findTask.id + '-' + contestTasksIds.length}]);
+                            setContestTasksIds([...contestTasksIds, findTask]);
                         }
                     }
                 }}>+</Button>
             </Group>
             <Space h="sm" />
             <SimpleGrid cols={3}>
-                { contestTasksIds.map((task) => {
-                    return <task.component key={task.key} onClickX={() => {
-                        removeTask(task)
-                    }}/>;
+                { contestTasksIds.map((task, index) => {
+                    return <div key={index}>{getTask(task.id, {
+                        name: task.name,
+                        onClickX() {
+                            removeTaskByIndex(index)
+                        }
+                    })}</div>;
                 }) }
             </SimpleGrid>
-            <Button>Submit</Button>
+            <Button onClick={submit}>Submit</Button>
         </Box>
     )
 }
