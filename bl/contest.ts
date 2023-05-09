@@ -9,9 +9,10 @@ export interface IContestData {
     desc: string;
     endHeight: number;
     endDate: number;
-    prizeFound: string[];
+    prizeFund: string[];
     owner: string;
     tasks: string[];
+    participants?: string[];
 }
 
 /**
@@ -20,7 +21,7 @@ export interface IContestData {
  * @param name 
  * @param desc 
  * @param endDate 
- * @param prizeFound 
+ * @param prizeFund 
  */
 export async function create(
         signer: Signer,
@@ -28,7 +29,7 @@ export async function create(
         desc: string,
         endDate: Date,
         tasks: string[],
-        prizeFound: InvokeArgs['payment']
+        prizeFund: InvokeArgs['payment']
     ) {
     const curHeight = await nodeInteraction.currentHeight(ApiBase);
     const curDate = new Date();
@@ -52,7 +53,39 @@ export async function create(
                 })
             }]
         },
-        payment: prizeFound
+        payment: prizeFund
+    });
+}
+
+export async function participate(
+    signer: Signer,
+    id: string
+) {
+    return invoke(signer, {
+        dApp: ContestAddress,
+        call: {
+            function: 'participate',
+            args: [{
+                type: 'string',
+                value: id
+            }]
+        }
+    });
+}
+
+export async function unparticipate(
+    signer: Signer,
+    id: string
+) {
+    return invoke(signer, {
+        dApp: ContestAddress,
+        call: {
+            function: 'unparticipate',
+            args: [{
+                type: 'string',
+                value: id
+            }]
+        }
     });
 }
 
@@ -79,7 +112,7 @@ export async function getAll() {
                 desc: '',
                 endHeight: 0,
                 endDate: 0,
-                prizeFound: [],
+                prizeFund: [],
                 owner: '',
                 tasks: []
             };
@@ -88,7 +121,7 @@ export async function getAll() {
             if (field === 'name') contests[id][field] = data[key].value as string;
             else if (field === 'desc') contests[id][field] = data[key].value as string;
             else if (field === 'owner') contests[id][field] = data[key].value as string;
-            else if (field === 'prizeFound') {
+            else if (field === 'prizeFund') {
                 const list = (data[key].value as string).split('|');
                 contests[id][field] = list;
             }
@@ -125,9 +158,10 @@ export async function getById(contestId: string) {
         desc: '',
         endHeight: 0,
         endDate: 0,
-        prizeFound: [],
+        prizeFund: [],
         owner: '',
-        tasks: []
+        tasks: [],
+        participants: []
     };  
 
     Object.keys(data).forEach((key) => {
@@ -136,7 +170,7 @@ export async function getById(contestId: string) {
             if (field === 'name') contest[field] = data[key].value as string;
             else if (field === 'desc') contest[field] = data[key].value as string;
             else if (field === 'owner') contest[field] = data[key].value as string;
-            else if (field === 'prizeFound') {
+            else if (field === 'prizeFund') {
                 const list = (data[key].value as string).split('|');
                 contest[field] = list;
             }
@@ -148,6 +182,12 @@ export async function getById(contestId: string) {
                 const endH = data[key].value as number;
                 contest[field] = endH;
                 contest.endDate = curDate.getTime() + ((endH - curHeight) * 60000);
+            }
+            else if (field === 'participant') {
+                const [, , , account, accField] = key.split('_');
+                if (accField === 'address') {
+                    contest.participants?.push(data[key].value as string);
+                }
             }
         }
     });

@@ -11,7 +11,7 @@ let Status_Stop = "stop"
 let Status_Delted = "deleted"
 
 # calc prize found string from payments
-func calcPrizeFound(payments: List[AttachedPayment]) = {
+func calcPrizeFund(payments: List[AttachedPayment]) = {
   func calc(accum: List[String], next: AttachedPayment) = {
     let assetName = match (next.assetId) {
         case t:ByteVector => toBase58String(t)
@@ -36,8 +36,8 @@ func getPrizeTransfers(prizeFundStr: String, recipient: Address) = {
 
 @Callable(i)
 func create(name: String, desc: String, endHeight: Int, tasks: List[String]) = {
-  let prizeFoundStr = calcPrizeFound(i.payments)
-  if (prizeFoundStr.size() == 0) then throw("No payments")
+  let prizeFundStr = calcPrizeFund(i.payments)
+  if (prizeFundStr.size() == 0) then throw("No payments")
   else if (tasks.size() == 0) then throw("Tasks list empty")
   else if (name.size() == 0) then throw("Name empty")
   else if (desc.size() == 0) then throw("Desc empty")
@@ -49,7 +49,7 @@ func create(name: String, desc: String, endHeight: Int, tasks: List[String]) = {
       StringEntry(ContestPrefix + contestId.toString() +  "_desc", desc),
       IntegerEntry(ContestPrefix + contestId.toString() +  "_endHeight", endHeight),
       StringEntry(ContestPrefix + contestId.toString() +  "_owner", i.caller.toString()),
-      StringEntry(ContestPrefix + contestId.toString() +  "_prizeFound", prizeFoundStr),
+      StringEntry(ContestPrefix + contestId.toString() +  "_prizeFund", prizeFundStr),
       StringEntry(ContestPrefix + contestId.toString() +  "_tasks", tasks.makeString_2C(";")),
       StringEntry(ContestPrefix + contestId.toString() +  "_status", Status_Active),
 
@@ -59,12 +59,61 @@ func create(name: String, desc: String, endHeight: Int, tasks: List[String]) = {
 }
 
 @Callable(i)
-func remove(id: String) = {
-  let ContestIdStr = ContestPrefix + id
+func participate(contestId: String) = {
+  let ContestIdStr = ContestPrefix + contestId
+  let ContestParticipantPrefix = ContestIdStr + "_participant_" + i.caller.toString()
+  let ContestParticipantAddressKey = ContestParticipantPrefix + "_address"
+
+  let isOwner = match (getString(ContestIdStr + "_owner")) {
+    case t:String => t == i.caller.toString()
+    case _ => throw("Data get owner error")
+  }
+  let isExist = match (getString(ContestParticipantAddressKey)) {
+    case t:String => true
+    case _ => false
+  }
+  let participantsCount = getInteger(ContestIdStr + "_participantsCount").valueOrElse(0)
+
+  if (isOwner) then throw("Owner cannot participate")
+  else if (isExist) then throw("You are already participating")
+  else
+  [
+    StringEntry(ContestParticipantAddressKey, i.caller.toString()),
+    IntegerEntry(ContestParticipantPrefix + "_startedAt", height),
+    IntegerEntry(ContestIdStr +  "_participantsCount", participantsCount + 1)
+  ]
+}
+
+@Callable(i)
+func unparticipate(contestId: String) = {
+  let ContestIdStr = ContestPrefix + contestId
+  let ContestParticipantPrefix = ContestIdStr + "_participant_" + i.caller.toString()
+  let ContestParticipantAddressKey = ContestParticipantPrefix + "_address"
+
+  let isExist = match (getString(ContestParticipantAddressKey)) {
+    case t:String => true
+    case _ => false
+  }
+  let participantsCount = getInteger(ContestIdStr + "_participantsCount").valueOrElse(0)
+
+  if (!isExist) then throw("You are not participating")
+  else
+  [
+    DeleteEntry(ContestParticipantAddressKey),
+    DeleteEntry(ContestParticipantPrefix + "_startedAt"),
+    if (participantsCount - 1 == 0) then
+      DeleteEntry(ContestIdStr +  "_participantsCount") else
+      IntegerEntry(ContestIdStr +  "_participantsCount", participantsCount - 1)
+  ]
+}
+
+@Callable(i)
+func remove(contestId: String) = {
+  let ContestIdStr = ContestPrefix + contestId
 
   # let status = getString(ContestIdStr + "_status").valueOrErrorMessage("Status not found")
   let participantsCount = getInteger(ContestIdStr + "_participantsCount").valueOrElse(0)
-  let prizeFundStr = getString(ContestIdStr + "_prizeFound").valueOrErrorMessage("Prize fund data not found")
+  let prizeFundStr = getString(ContestIdStr + "_prizeFund").valueOrErrorMessage("Prize fund data not found")
   let isOwner = match (getString(ContestIdStr + "_owner")) {
       case t:String => t == i.caller.toString()
       case _ => throw("Data get owner error")
@@ -78,7 +127,7 @@ func remove(id: String) = {
     DeleteEntry(ContestIdStr +  "_desc"),
     DeleteEntry(ContestIdStr +  "_endHeight"),
     DeleteEntry(ContestIdStr +  "_owner"),
-    DeleteEntry(ContestIdStr +  "_prizeFound"),
+    DeleteEntry(ContestIdStr +  "_prizeFund"),
     DeleteEntry(ContestIdStr +  "_tasks"),
     DeleteEntry(ContestIdStr +  "_status"),
     DeleteEntry(ContestIdStr + "_participantsCount")
