@@ -13,4 +13,4 @@ export interface ISignerContext {
     setAuthData?: (value: IAuthData) => void;
 }
 
-export const SignerContext = createContext<ISignerContext>({});
+export const SignerContext = createContext<ISignerContext>({authData: {isLogin: false}});

@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   IconNews,
-  IconGraph
+  IconGraph,
+  IconUser
 } from '@tabler/icons-react';
 import { ThemeIcon, UnstyledButton, Group, Text } from '@mantine/core';
 import Link from 'next/link';
+import { SignerContext } from '@/context/SignerContext';
 
 interface MainLinkProps {
   icon: React.ReactNode;
@@ -43,11 +45,18 @@ function MainLink({ icon, color, label, href }: MainLinkProps) {
 }
 
 const data = [
-  { icon: <IconNews size="1rem" />, color: 'pink', label: 'Contests', href: '/' },
+  { icon: <IconNews size="1rem" />, color: 'pink', label: 'Contests', href: '/contests' },
+  { icon: <IconUser size="1rem" />, color: 'yellow', label: 'My', href: '/contests/my', isUser: true },
   { icon: <IconGraph size="1rem" />, color: 'blue', label: 'Stats', href: '/stats' },
 ];
 
 export function MainLinks() {
-  const links = data.map((link) => <MainLink {...link} key={link.label} />);
+  const {authData} = useContext(SignerContext);
+  const links = data.map((link) => {
+    if (link.isUser) {
+      return authData.isLogin ? <MainLink {...link} key={link.label}/> : null;
+    }
+    return <MainLink {...link} key={link.label} />;
+  });
   return <div>{links}</div>;
 }

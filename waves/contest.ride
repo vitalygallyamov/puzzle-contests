@@ -1,0 +1,90 @@
+{-# STDLIB_VERSION 6 #-}
+{-# CONTENT_TYPE DAPP #-}
+{-# SCRIPT_TYPE ACCOUNT #-}
+
+let LastContestIdKey = "last_contest_id"
+let ContestPrefix = "contest_"
+
+let Status_Draft = "draft"
+let Status_Active = "active"
+let Status_Stop = "stop"
+let Status_Delted = "deleted"
+
+# calc prize found string from payments
+func calcPrizeFound(payments: List[AttachedPayment]) = {
+  func calc(accum: List[String], next: AttachedPayment) = {
+    let assetName = match (next.assetId) {
+        case t:ByteVector => toBase58String(t)
+        case _ => "WAVES"
+      }
+    if (assetName.size() > 0 && next.amount > 0) then {
+      accum :+ (assetName + ":" + next.amount.toString())
+    } else accum
+  }
+  (FOLD<10>(payments, [], calc)).makeString_2C("|")
+}
+
+# calc prize found string from payments
+func getPrizeTransfers(prizeFundStr: String, recipient: Address) = {
+  func calc(accum: List[ScriptTransfer], next: String) = {
+    let parts = next.split(":")
+    let assetId = if (parts[0] == "WAVES") then unit else parts[0].fromBase58String()
+    accum :+ ScriptTransfer(recipient, parts[1].parseInt().value(), assetId)
+  }
+  FOLD<10>(prizeFundStr.split_4C("|"), [], calc)
+}
+
+@Callable(i)
+func create(name: String, desc: String, endHeight: Int, tasks: List[String]) = {
+  let prizeFoundStr = calcPrizeFound(i.payments)
+  if (prizeFoundStr.size() == 0) then throw("No payments")
+  else if (tasks.size() == 0) then throw("Tasks list empty")
+  else if (name.size() == 0) then throw("Name empty")
+  else if (desc.size() == 0) then throw("Desc empty")
+  else if (endHeight < height) then throw("Invalid date end")
+  else {
+    let contestId = getInteger(LastContestIdKey).valueOrElse(1)
+    ([
+      StringEntry(ContestPrefix + contestId.toString() +  "_name", name),
+      StringEntry(ContestPrefix + contestId.toString() +  "_desc", desc),
+      IntegerEntry(ContestPrefix + contestId.toString() +  "_endHeight", endHeight),
+      StringEntry(ContestPrefix + contestId.toString() +  "_owner", i.caller.toString()),
+      StringEntry(ContestPrefix + contestId.toString() +  "_prizeFound", prizeFoundStr),
+      StringEntry(ContestPrefix + contestId.toString() +  "_tasks", tasks.makeString_2C(";")),
+      StringEntry(ContestPrefix + contestId.toString() +  "_status", Status_Active),
+
+      IntegerEntry(LastContestIdKey, contestId + 1)
+    ], contestId)
+  }
+}
+
+@Callable(i)
+func remove(id: String) = {
+  let ContestIdStr = ContestPrefix + id
+
+  # let status = getString(ContestIdStr + "_status").valueOrErrorMessage("Status not found")
+  let participantsCount = getInteger(ContestIdStr + "_participantsCount").valueOrElse(0)
+  let prizeFundStr = getString(ContestIdStr + "_prizeFound").valueOrErrorMessage("Prize fund data not found")
+  let isOwner = match (getString(ContestIdStr + "_owner")) {
+      case t:String => t == i.caller.toString()
+      case _ => throw("Data get owner error")
+    }
+
+  if (!isOwner) then throw("You are not the owner")
+  else if (participantsCount > 0) then throw("The number of participants is greater than zero")
+  else
+  [
+    DeleteEntry(ContestIdStr +  "_name"),
+    DeleteEntry(ContestIdStr +  "_desc"),
+    DeleteEntry(ContestIdStr +  "_endHeight"),
+    DeleteEntry(ContestIdStr +  "_owner"),
+    DeleteEntry(ContestIdStr +  "_prizeFound"),
+    DeleteEntry(ContestIdStr +  "_tasks"),
+    DeleteEntry(ContestIdStr +  "_status"),
+    DeleteEntry(ContestIdStr + "_participantsCount")
+  ] ++ getPrizeTransfers(prizeFundStr, i.caller)
+}
+
+@Verifier(tx)
+func verify() = sigVerify(tx.bodyBytes, tx.proofs[0], tx.senderPublicKey)
+        

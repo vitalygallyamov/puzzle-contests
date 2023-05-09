@@ -3,6 +3,17 @@ import { invoke } from '@/utils/signer';
 import {Signer, InvokeArgs} from '@waves/signer';
 import { nodeInteraction } from '@waves/waves-transactions';
 
+export interface IContestData {
+    id: string;
+    name: string;
+    desc: string;
+    endHeight: number;
+    endDate: number;
+    prizeFound: string[];
+    owner: string;
+    tasks: string[];
+}
+
 /**
  * Call contact fn for create contest 
  * @param signer 
@@ -11,7 +22,14 @@ import { nodeInteraction } from '@waves/waves-transactions';
  * @param endDate 
  * @param prizeFound 
  */
-export async function create(signer: Signer, name: string, desc: string, endDate: Date, prizeFound: InvokeArgs['payment']) {
+export async function create(
+        signer: Signer,
+        name: string,
+        desc: string,
+        endDate: Date,
+        tasks: string[],
+        prizeFound: InvokeArgs['payment']
+    ) {
     const curHeight = await nodeInteraction.currentHeight(ApiBase);
     const curDate = new Date();
     return invoke(signer, {
@@ -27,8 +45,112 @@ export async function create(signer: Signer, name: string, desc: string, endDate
             }, {
                 type: 'integer',
                 value: curHeight + Math.floor((endDate.getTime() - curDate.getTime()) / 60000)
+            }, {
+                type: 'list',
+                value: tasks.map((t) => {
+                    return {type: 'string', value: t};
+                })
             }]
         },
         payment: prizeFound
     });
 }
+
+/**
+ * Get all contests data
+ */
+export async function getAll() {
+    const data = await nodeInteraction.accountData({
+        address: ContestAddress,
+        match: new RegExp('contest_(.*)')
+    }, ApiBase);
+
+    const curHeight = await nodeInteraction.currentHeight(ApiBase);
+    const curDate = new Date();
+
+    const contests: {[x: string]: IContestData} = {};  
+
+    Object.keys(data).forEach((key) => {
+        const [, id, field] = key.split('_');
+        if (!contests[id]) {
+            contests[id] = {
+                id,
+                name: '',
+                desc: '',
+                endHeight: 0,
+                endDate: 0,
+                prizeFound: [],
+                owner: '',
+                tasks: []
+            };
+        }
+        if (data[key].value !== undefined && id && contests[id]) {
+            if (field === 'name') contests[id][field] = data[key].value as string;
+            else if (field === 'desc') contests[id][field] = data[key].value as string;
+            else if (field === 'owner') contests[id][field] = data[key].value as string;
+            else if (field === 'prizeFound') {
+                const list = (data[key].value as string).split('|');
+                contests[id][field] = list;
+            }
+            else if (field === 'tasks') {
+                const list = (data[key].value as string).split(';');
+                contests[id][field] = list;
+            }
+            else if (field === 'endHeight') {
+                const endH = data[key].value as number;
+                contests[id][field] = endH;
+                contests[id].endDate = curDate.getTime() + ((endH - curHeight) * 60000);
+            }
+        }
+    });
+    
+    return Object.keys(contests).map(id => contests[id]);
+};
+
+/**
+ * Get contest data by ID
+ */
+export async function getById(contestId: string) {
+    const data = await nodeInteraction.accountData({
+        address: ContestAddress,
+        match: new RegExp(`contest_${contestId}_(.*)`)
+    }, ApiBase);
+
+    const curHeight = await nodeInteraction.currentHeight(ApiBase);
+    const curDate = new Date();
+
+    const contest: IContestData = {
+        id: contestId,
+        name: '',
+        desc: '',
+        endHeight: 0,
+        endDate: 0,
+        prizeFound: [],
+        owner: '',
+        tasks: []
+    };  
+
+    Object.keys(data).forEach((key) => {
+        const [, id, field] = key.split('_');
+        if (data[key].value !== undefined && id) {
+            if (field === 'name') contest[field] = data[key].value as string;
+            else if (field === 'desc') contest[field] = data[key].value as string;
+            else if (field === 'owner') contest[field] = data[key].value as string;
+            else if (field === 'prizeFound') {
+                const list = (data[key].value as string).split('|');
+                contest[field] = list;
+            }
+            else if (field === 'tasks') {
+                const list = (data[key].value as string).split(';');
+                contest[field] = list;
+            }
+            else if (field === 'endHeight') {
+                const endH = data[key].value as number;
+                contest[field] = endH;
+                contest.endDate = curDate.getTime() + ((endH - curHeight) * 60000);
+            }
+        }
+    });
+    
+    return contest;
+};

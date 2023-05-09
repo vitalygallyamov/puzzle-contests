@@ -1,22 +1,35 @@
 import {IconCalendarDue, IconUsers, IconTrophy} from '@tabler/icons-react';
 import {Card, Group, Text, Badge, Button, Space, Flex, ThemeIcon} from "@mantine/core";
+import { IContestData } from '@/bl/contest';
+import moment from 'moment';
+import { ASSETS_MAP } from '@/data/assets';
+import Link from 'next/link';
+import { formatAddress } from '@/utils/address';
+
 
 interface ICardProps {
-    name: string;
+    item: IContestData;
 }
 
 export default function ContestCard(props: ICardProps) {
+    const {item} = props;
+    const curDate = new Date();
+    const endDate = new Date(item.endDate)
     return (
         <Card shadow="sm" padding="lg" radius="md" withBorder>
             <Group position="apart" mb="xs">
-                <Text weight={500}>{props.name}</Text>
+                <Text weight={500}>{item.name}</Text>
                 <Flex align='center'>
-                    <Badge color="red" variant="dot">
+                    <Badge variant="filled" title={item.owner} color="indigo">
+                        {formatAddress(item.owner)}
+                    </Badge>
+                    <Space w="xs" />
+                    <Badge color={curDate.getTime() < endDate.getTime() ? 'green' : 'red'} variant="dot">
                         <Flex align='center'>
-                            <IconCalendarDue size='15px' />&nbsp;<div>11.05</div>
+                            <IconCalendarDue size='15px' />&nbsp;<div>{moment(endDate).format('DD/MM')}</div>
                         </Flex>
                     </Badge>
-                    <Space w="md" />
+                    <Space w="xs" />
                     <Badge color="green" variant="light">
                         Active
                     </Badge>
@@ -24,7 +37,7 @@ export default function ContestCard(props: ICardProps) {
             </Group>
 
             <Text size="sm" color="dimmed">
-                From the start of this contest, buy 10 puzzles via puzzle swap and hold them until the end of the contest
+                {item.desc}
             </Text>
 
             <Group position="apart" mt='sm'>
@@ -33,7 +46,7 @@ export default function ContestCard(props: ICardProps) {
                         <ThemeIcon size="sm" variant="light" color="gray">
                             <IconUsers />
                         </ThemeIcon>
-                        &nbsp;<div>10</div>
+                        &nbsp;<div>0</div>
                     </Flex>
                 </Text>
                 <Text size="sm" color="dimmed">
@@ -41,12 +54,20 @@ export default function ContestCard(props: ICardProps) {
                         <ThemeIcon size="sm" variant="light" color="yellow">
                             <IconTrophy />
                         </ThemeIcon>
-                        &nbsp;<div>10 PUZZLE</div>
+                        &nbsp;
+                        {
+                            item.prizeFound.map((item, index) => {
+                                const [assetId, intAmount] = item.split(':');
+                                if (!ASSETS_MAP[assetId]) return null;
+                                const amount = parseInt(intAmount, 10) / Math.pow(10, ASSETS_MAP[assetId].decimals);
+                                return <div key={index}>{`${amount} ${ASSETS_MAP[assetId].name}`}</div>;
+                            })
+                        }
                     </Flex>
                 </Text>
             </Group>
 
-            <Button variant="light" color="indigo" fullWidth mt="md" radius="md">
+            <Button variant="light" color="indigo" fullWidth mt="md" radius="md" component={Link} href={`/contests/${item.id}`}>
                 Participate
             </Button>
         </Card>

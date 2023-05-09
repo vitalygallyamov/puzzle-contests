@@ -1,45 +1,62 @@
 import { useContext, useMemo, useState } from 'react';
 import { Title, TextInput, Space, Box, Textarea, Button, NumberInput, Group, Select, Divider, SimpleGrid } from "@mantine/core";
-import { DateTimePicker } from '@mantine/dates';
+import { DateTimePicker, DateValue } from '@mantine/dates';
+
+import { useRouter } from 'next/router';
 
 import {getTask, Tasks} from '@/components/tasks';
 import { create } from '@/bl/contest';
 import { SignerContext } from '@/context/SignerContext';
 import { transactionById } from '@waves/waves-transactions/dist/nodeInteraction';
 import { ApiBase } from '@/data/common';
+import { ASSETS, ASSETS_MAP, PUZZLE_ASSET_ID } from '@/data/assets';
 
 export default function Create() {
+    const router = useRouter();
     const {authData} = useContext(SignerContext);
 
-    const [contestTasksIds, setContestTasksIds] = useState<any[]>([]);
-    const [selectedTask, setSelectedTask] = useState<string | null>(null);
-    const defDate = useMemo(() => {
-        const t = new Date();
+    const [name, setName] = useState('');
+    const [desc, setDesc] = useState('');
+    const [endDate, setEndDate] = useState<DateValue>(() => {
         const d = new Date();
         d.setDate(d.getDate() + 7);
         d.setHours(23);
         d.setMinutes(59);
         d.setSeconds(59);
         return d;
-    }, []);
+    });
+    const [prizeAmount, setPrizeAmount] = useState(0);
+    const [prizeAsset, setPrizeAsset] = useState<string | null>(PUZZLE_ASSET_ID);
+
+    const [contestTasksIds, setContestTasksIds] = useState<any[]>([]);
+    const [contestTasksData, setContestTasksData] = useState<string[]>([]);
+    const [selectedTask, setSelectedTask] = useState<string | null>(null);
 
     const removeTaskByIndex = (index: number) => {
         setContestTasksIds((prev) => {
             return prev.filter((item, i) => i !== index)
         });
+        setContestTasksData((prev) => {
+            return prev.filter((item, i) => i !== index)
+        });
     }
 
-    (async() => {
-        const t = await transactionById('Cj5NuHRjGC4wkBozwjua8zzvwbVbA5ZcYxbXgqNn6fjk', ApiBase);
-        console.log(t);
-    })();
-
-    const submit = () => {
-        if (authData.signer) {
-            create(authData.signer, 'test', 'desc', defDate, [{
-                assetId: null,
-                amount: 1000
-            }]);
+    const submit = async () => {
+        if (authData.signer && name && desc && endDate && contestTasksData.length && prizeAmount > 0 && prizeAsset) {
+            try {
+                const tx: any = await create(authData.signer, name, desc, endDate, contestTasksData, [{
+                    assetId: prizeAsset,
+                    amount: prizeAmount * Math.pow(10, ASSETS_MAP[prizeAsset].decimals)
+                }]);
+                if (tx?.stateChanges?.data?.length) {
+                    const lastIdData = tx?.stateChanges?.data.find((d: any) => d.key === 'last_contest_id');
+                    if (lastIdData.value > 0) {
+                        router.replace(`/contests/${lastIdData.value - 1}`);
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
         }
     }
     return (
@@ -50,31 +67,38 @@ export default function Create() {
                 placeholder="Name"
                 withAsterisk
                 label="Contest name"
+                value={name}
+                onChange={(event) => setName(event.currentTarget.value)}
             />
             <Textarea
-            withAsterisk
+                withAsterisk
                 label="Description"
+                value={desc}
+                onChange={(event) => setDesc(event.currentTarget.value)}
             />
             <DateTimePicker
                 label="End date"
                 withAsterisk
-                defaultValue={defDate}
+                value={endDate}
+                onChange={(dateValue) => setEndDate(dateValue)}
             />
             <Group>
                 <NumberInput
-                    defaultValue={1}
                     label="Prize amount"
                     withAsterisk
+                    value={prizeAmount}
+                    precision={4}
                     min={0}
+                    onChange={(value) => setPrizeAmount(value || 0)}
                 />
                 <Select
                     label="Asset"
                     withAsterisk
-                    data={[
-                        { value: 'WAVES', label: 'Waves' },
-                        { value: 'PUZZLE', label: 'Puzzle' },
-                        { value: 'USDTPP', label: 'USDT' } 
-                    ]}
+                    value={prizeAsset}
+                    data={ASSETS.map(asset => {
+                        return { value: asset.id, label: asset.name };
+                    })}
+                    onChange={(value) => setPrizeAsset(value)}
                 />
             </Group>
             <Group>
@@ -110,6 +134,7 @@ export default function Create() {
                         const findTask = Tasks.find(task => task.id === selectedTask);
                         if (findTask) {
                             setContestTasksIds([...contestTasksIds, findTask]);
+                            setContestTasksData([...contestTasksData, '']);
                         }
                     }
                 }}>+</Button>
@@ -119,8 +144,16 @@ export default function Create() {
                 { contestTasksIds.map((task, index) => {
                     return <div key={index}>{getTask(task.id, {
                         name: task.name,
+                        hint: task.hint,
                         onClickX() {
-                            removeTaskByIndex(index)
+                            removeTaskByIndex(index);
+                        },
+                        onDataChange(value) {
+                            setContestTasksData((prev) => {
+                                const data = [...prev];
+                                data[index] = `id:${task.id}|${value}`;
+                                return data;
+                            });
                         }
                     })}</div>;
                 }) }

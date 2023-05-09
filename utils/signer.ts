@@ -17,6 +17,5 @@ export const invoke = async (signer: Signer, args: InvokeArgs) => {
     const tx:any = await signer.invoke(args).broadcast();
 
     const txStatus = await waitForTx(tx.id, {apiBase: ApiBase});
-    console.log(txStatus);
     return txStatus;
 }

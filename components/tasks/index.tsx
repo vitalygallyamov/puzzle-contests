@@ -1,34 +1,40 @@
-import { FunctionComponentElement, ReactElement, createElement } from 'react';
+import { ReactElement } from 'react';
 import BuyAsset from './BuyAsset';
-import StakePuzzle from './StakePuzzle';
-import StakeWaves from './StakeWaves';
+import BuyAndStakePuzzle from './BuyAndStakePuzzle';
+import LeaseWaves from './LeaseWaves';
 
 export interface ITaskProps {
     name: string;
+    hint?: string;
+    viewProps?: {[x: string]: string} 
     onClickX(): void;
+    onDataChange(value: string): void;
 }
 
 export {default as BuyAsset} from './BuyAsset';
 
 export const Tasks = [{
-    id: 'buy-asset',
-    name: 'Buy Asset'
+    id: 'buy-asset-puzzle-swap',
+    name: 'Buy Asset',
+    hint: 'Buy the specified number of tokens on Puzzle Swap and keep them until the end of the contest'
 }, {
-    id: 'stake-puzzle',
-    name: 'Stake Puzzle'
+    id: 'buy-and-stake-puzzle',
+    name: 'Stake Puzzle',
+    hint: 'Buy and staker the specified number of tokens on Puzzle Swap and keep them until the end of the contest'
 }, {
-    id: 'stake-waves',
-    name: 'Stake Waves'
+    id: 'lease-waves',
+    name: 'Lease Waves',
+    hint: 'Lease tokens to the specified node address'
 }];
 
 export const getTask = (id: string, props: ITaskProps): ReactElement => {
     switch (id) {
-        case 'buy-asset':
+        case 'buy-asset-puzzle-swap':
             return <BuyAsset {...props}/>
-        case 'stake-puzzle':
-            return <StakePuzzle {...props}/>
-        case 'stake-waves':
-            return <StakeWaves {...props}/>
+        case 'buy-and-stake-puzzle':
+            return <BuyAndStakePuzzle {...props}/>
+        case 'lease-waves':
+            return <LeaseWaves {...props}/>
     }
 
     return <></>;

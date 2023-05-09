@@ -14,7 +14,7 @@ export default function AppHeader() {
                     <ActionIcon variant="default" onClick={() => toggleColorScheme()} size={30}>
                         {colorScheme === 'dark' ? <IconSun size="1rem" /> : <IconMoonStars size="1rem" />}
                     </ActionIcon>
-                    <Button component={Link} href="/create">Create</Button>
+                    <Button component={Link} href="/contests/create">Create</Button>
                 </Group>
             </Group>
         </Header>
