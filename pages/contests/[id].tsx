@@ -34,7 +34,7 @@ export default function Page(props: IContestPageProps) {
                     });
                     const taskInfo = Tasks.filter(t => t.id === viewProps.id);
                     if (taskInfo.length) {
-                        return <Grid.Col span={3}>{getTask(taskInfo[0].id, {...taskInfo[0], viewProps})}</Grid.Col>
+                        return <Grid.Col span={3} key={index}>{getTask(taskInfo[0].id, {...taskInfo[0], viewProps})}</Grid.Col>
                     } else null;
                 })
             }
