@@ -41,12 +41,12 @@ export default function ContestCard(props: ICardProps) {
             </Text>
 
             <Group position="apart" mt='sm'>
-                <Text size="sm" color="dimmed">
+                <Text size="sm" color="dimmed" title='Participants'>
                     <Flex align='center'>
                         <ThemeIcon size="sm" variant="light" color="gray">
                             <IconUsers />
                         </ThemeIcon>
-                        &nbsp;<div>0</div>
+                        &nbsp;<div>{item.participantsCount || 0}</div>
                     </Flex>
                 </Text>
                 <Text size="sm" color="dimmed">

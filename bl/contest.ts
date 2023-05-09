@@ -12,6 +12,7 @@ export interface IContestData {
     prizeFund: string[];
     owner: string;
     tasks: string[];
+    participantsCount: number;
     participants?: string[];
 }
 
@@ -114,13 +115,16 @@ export async function getAll() {
                 endDate: 0,
                 prizeFund: [],
                 owner: '',
-                tasks: []
+                tasks: [],
+                participantsCount: 0,
+                participants: []
             };
         }
         if (data[key].value !== undefined && id && contests[id]) {
             if (field === 'name') contests[id][field] = data[key].value as string;
             else if (field === 'desc') contests[id][field] = data[key].value as string;
             else if (field === 'owner') contests[id][field] = data[key].value as string;
+            else if (field === 'participantsCount') contests[id][field] = data[key].value as number;
             else if (field === 'prizeFund') {
                 const list = (data[key].value as string).split('|');
                 contests[id][field] = list;
@@ -161,6 +165,7 @@ export async function getById(contestId: string) {
         prizeFund: [],
         owner: '',
         tasks: [],
+        participantsCount: 0,
         participants: []
     };  
 
@@ -170,6 +175,7 @@ export async function getById(contestId: string) {
             if (field === 'name') contest[field] = data[key].value as string;
             else if (field === 'desc') contest[field] = data[key].value as string;
             else if (field === 'owner') contest[field] = data[key].value as string;
+            else if (field === 'participantsCount') contest[field] = data[key].value as number;
             else if (field === 'prizeFund') {
                 const list = (data[key].value as string).split('|');
                 contest[field] = list;
