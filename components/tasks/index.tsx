@@ -7,8 +7,8 @@ export interface ITaskProps {
     name: string;
     hint?: string;
     viewProps?: {[x: string]: string} 
-    onClickX(): void;
-    onDataChange(value: string): void;
+    onClickX?(): void;
+    onDataChange?(value: string): void;
 }
 
 export {default as BuyAsset} from './BuyAsset';
