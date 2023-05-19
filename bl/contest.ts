@@ -8,10 +8,12 @@ export interface IContestData {
     name: string;
     desc: string;
     endHeight: number;
+    startHeight: number;
     endDate: number;
     prizeFund: string[];
     owner: string;
     tasks: string[];
+    status: string;
     participantsCount: number;
     participants?: string[];
 }
@@ -111,20 +113,24 @@ export async function getAll() {
                 id,
                 name: '',
                 desc: '',
+                startHeight: 0,
                 endHeight: 0,
                 endDate: 0,
                 prizeFund: [],
                 owner: '',
                 tasks: [],
                 participantsCount: 0,
-                participants: []
+                participants: [],
+                status: ''
             };
         }
         if (data[key].value !== undefined && id && contests[id]) {
             if (field === 'name') contests[id][field] = data[key].value as string;
             else if (field === 'desc') contests[id][field] = data[key].value as string;
             else if (field === 'owner') contests[id][field] = data[key].value as string;
+            else if (field === 'status') contests[id][field] = data[key].value as string;
             else if (field === 'participantsCount') contests[id][field] = data[key].value as number;
+            else if (field === 'startHeight') contests[id][field] = data[key].value as number;
             else if (field === 'prizeFund') {
                 const list = (data[key].value as string).split('|');
                 contests[id][field] = list;
@@ -160,13 +166,15 @@ export async function getById(contestId: string) {
         id: contestId,
         name: '',
         desc: '',
+        startHeight: 0,
         endHeight: 0,
         endDate: 0,
         prizeFund: [],
         owner: '',
         tasks: [],
         participantsCount: 0,
-        participants: []
+        participants: [],
+        status: ''
     };  
 
     Object.keys(data).forEach((key) => {
@@ -175,7 +183,9 @@ export async function getById(contestId: string) {
             if (field === 'name') contest[field] = data[key].value as string;
             else if (field === 'desc') contest[field] = data[key].value as string;
             else if (field === 'owner') contest[field] = data[key].value as string;
+            else if (field === 'status') contest[field] = data[key].value as string;
             else if (field === 'participantsCount') contest[field] = data[key].value as number;
+            else if (field === 'startHeight') contest[field] = data[key].value as number;
             else if (field === 'prizeFund') {
                 const list = (data[key].value as string).split('|');
                 contest[field] = list;

@@ -2,11 +2,13 @@ import { ReactElement } from 'react';
 import BuyAsset from './BuyAsset';
 import BuyAndStakePuzzle from './BuyAndStakePuzzle';
 import LeaseWaves from './LeaseWaves';
+import { IDataTransaction } from '@/utils/wdsApi';
 
 export interface ITaskProps {
     name: string;
     hint?: string;
-    viewProps?: {[x: string]: string} 
+    viewProps?: {[x: string]: string};
+    userActions?: {[x: string]: IDataTransaction[]};
     onClickX?(): void;
     onDataChange?(value: string): void;
 }

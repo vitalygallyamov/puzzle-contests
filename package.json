@@ -26,6 +26,7 @@
     "@waves/signer": "^1.1.0",
     "@waves/waves-transactions": "^4.2.10",
     "autoprefixer": "10.4.14",
+    "axios": "^1.4.0",
     "eslint": "8.39.0",
     "eslint-config-next": "13.3.2",
     "identity-img": "^2.0.0",

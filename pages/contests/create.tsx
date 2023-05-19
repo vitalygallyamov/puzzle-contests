@@ -25,12 +25,17 @@ export default function Create() {
         d.setSeconds(59);
         return d;
     });
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(today.getDate() + 1);
     const [prizeAmount, setPrizeAmount] = useState(0);
     const [prizeAsset, setPrizeAsset] = useState<string | null>(PUZZLE_ASSET_ID);
 
     const [contestTasksIds, setContestTasksIds] = useState<any[]>([]);
     const [contestTasksData, setContestTasksData] = useState<string[]>([]);
     const [selectedTask, setSelectedTask] = useState<string | null>(null);
+
+    const [isSending, setIsSending] = useState(false);
 
     const removeTaskByIndex = (index: number) => {
         setContestTasksIds((prev) => {
@@ -43,11 +48,13 @@ export default function Create() {
 
     const submit = async () => {
         if (authData.signer && name && desc && endDate && contestTasksData.length && prizeAmount > 0 && prizeAsset) {
+            setIsSending(true);
             try {
                 const tx: any = await create(authData.signer, name, desc, endDate, contestTasksData, [{
                     assetId: prizeAsset,
                     amount: prizeAmount * Math.pow(10, ASSETS_MAP[prizeAsset].decimals)
                 }]);
+                setIsSending(false);
                 if (tx?.stateChanges?.data?.length) {
                     const lastIdData = tx?.stateChanges?.data.find((d: any) => d.key === 'last_contest_id');
                     if (lastIdData.value > 0) {
@@ -55,6 +62,7 @@ export default function Create() {
                     }
                 }
             } catch (e) {
+                setIsSending(false);
                 console.error(e);
             }
         }
@@ -79,6 +87,7 @@ export default function Create() {
             <DateTimePicker
                 label="End date"
                 withAsterisk
+                minDate={startDate}
                 value={endDate}
                 onChange={(dateValue) => setEndDate(dateValue)}
             />
@@ -102,7 +111,7 @@ export default function Create() {
                 />
             </Group>
             <Group>
-                <Select
+                {/* <Select
                     label="Distribution method"
                     withAsterisk
                     data={[
@@ -115,7 +124,7 @@ export default function Create() {
                     label="Number of winners"
                     withAsterisk
                     min={1}
-                />
+                /> */}
             </Group>
             <Space h="md" />
             <Divider my="sm" />
@@ -158,7 +167,8 @@ export default function Create() {
                     })}</div>;
                 }) }
             </SimpleGrid>
-            <Button onClick={submit}>Submit</Button>
+            <Space h='md' />
+            <Button onClick={submit} loading={isSending}>Submit</Button>
         </Box>
     )
 }

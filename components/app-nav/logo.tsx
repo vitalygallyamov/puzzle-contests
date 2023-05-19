@@ -11,6 +11,7 @@ export function Logo({ colorScheme }: { colorScheme: ColorScheme }) {
         </svg>
         <Space w="xs"/>
         <Title size='h3' color='#7075e9'>Puzzlify</Title>
+        <sup style={{top: '5px'}}>beta</sup>
     </Flex>
   );
 }

@@ -47,6 +47,7 @@ func create(name: String, desc: String, endHeight: Int, tasks: List[String]) = {
     ([
       StringEntry(ContestPrefix + contestId.toString() +  "_name", name),
       StringEntry(ContestPrefix + contestId.toString() +  "_desc", desc),
+      IntegerEntry(ContestPrefix + contestId.toString() +  "_startHeight", height),
       IntegerEntry(ContestPrefix + contestId.toString() +  "_endHeight", endHeight),
       StringEntry(ContestPrefix + contestId.toString() +  "_owner", i.caller.toString()),
       StringEntry(ContestPrefix + contestId.toString() +  "_prizeFund", prizeFundStr),
@@ -125,6 +126,7 @@ func remove(contestId: String) = {
   [
     DeleteEntry(ContestIdStr +  "_name"),
     DeleteEntry(ContestIdStr +  "_desc"),
+    DeleteEntry(ContestIdStr +  "_startHeight"),
     DeleteEntry(ContestIdStr +  "_endHeight"),
     DeleteEntry(ContestIdStr +  "_owner"),
     DeleteEntry(ContestIdStr +  "_prizeFund"),
