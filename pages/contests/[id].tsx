@@ -1,14 +1,19 @@
-import { IContestData, getById, participate, unparticipate } from '@/bl/contest';
+import { IContestData, chooseWinner, getById, participate, unparticipate } from '@/bl/contest';
 import { Tasks, getTask } from '@/components/tasks';
 import { SignerContext } from '@/context/SignerContext';
 import { ASSETS_MAP } from '@/data/assets';
-import { Box, Space, Text, Title, Grid, Button, Group, Table, ThemeIcon } from '@mantine/core';
-import { IconRefresh, IconTrophy } from '@tabler/icons-react';
+import { Box, Space, Text, Title, Grid, Button, Group, Table, ThemeIcon, Divider, Badge } from '@mantine/core';
+import { IconAward, IconRefresh, IconTrophy } from '@tabler/icons-react';
 import axios from 'axios';
 import moment from 'moment';
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+
+// import Timer from '@/components/common/Timer';
+import Breadcrumbs from '@/components/common/Breadcrumbs';
+import ParticipantsList from '@/components/common/ParticipantsList';
+import { formatAddress } from '@/utils/address';
 
 interface IContestPageProps {
     data: IContestData;
@@ -26,10 +31,38 @@ export default function Page(props: IContestPageProps) {
     const { authData } = useContext(SignerContext);
     const { id, name, desc, tasks, owner, participants, endDate, prizeFund } = props.data;
 
+    const breadItems = useMemo(() => {
+        return [{
+            title: 'Puzzlify',
+            href: '#'
+        }, {
+            title: 'Contests',
+            href: '/contests'
+        }, {
+            title: name,
+            href: '/contests/' + id
+        }];
+    }, [id, name]);
+
     const [tasksData, setTasksData] = useState();
     const [tasksLoading, setTaskLoading] = useState(false);
+    const [choosingLoading, setChoosingLoading] = useState(false);
 
     const [startParticipate, setStartParticipate] = useState(false);
+
+    const callChooseWinner = useCallback(() => {
+        const addresses: string[] = [];
+        if (tasksData && authData.signer) {
+            Object.keys(tasksData).forEach((taskId) => {
+                addresses.push(...Object.keys(tasksData[taskId]))
+            })
+            const addressSet = new Set(...addresses);
+            // if (addressSet.size > 0) {
+                setChoosingLoading(true);
+                chooseWinner(authData.signer, id, Array.from(addressSet)).finally(() => setChoosingLoading(false));
+            // }
+        }
+    }, [id, authData.signer, tasksData]);
 
     const updateTasksData = useCallback(() => {
         setTaskLoading(true);
@@ -52,6 +85,8 @@ export default function Page(props: IContestPageProps) {
 
     return (
         <Box>
+            <Breadcrumbs items={breadItems} />
+            <Space h='xl' />
             <Title>{name}</Title>
             <Space h='md' />
             <Text>{desc}</Text>
@@ -60,7 +95,9 @@ export default function Page(props: IContestPageProps) {
                 <tbody>
                     <tr>
                         <td>End date</td>
-                        <td>{moment(endDate).format('DD.MM.YY')}</td>
+                        <td>
+                            {moment(endDate).format('DD.MM.YY')}
+                        </td>
                     </tr>
                     <tr>
                         <td>Prize</td>
@@ -80,8 +117,21 @@ export default function Page(props: IContestPageProps) {
                             </Group>
                         </td>
                     </tr>
+                    <tr>
+                        <td>Owner</td>
+                        <td>
+                            <Badge color='grape' title={owner}>{formatAddress(owner)}</Badge>
+                        </td>
+                    </tr>
                 </tbody>
             </Table>
+            <Space h='xl' />
+            
+            <Title size='h3'>Participants</Title>
+            <Space h='xs' />
+            <Group>
+                <ParticipantsList items={participants || []} active={authData.userData?.address} />
+            </Group>
             <Space h='md' />
             {
                 authData.userData && authData.userData?.address !== owner ?
@@ -107,16 +157,29 @@ export default function Page(props: IContestPageProps) {
                     )
                     : null
             }
-            <Space h='xl' />
-            <Title size='h3'>Tasks</Title>
-            <Space h='xs' />
+
+            <Divider my="sm" />
             <Group>
+                <Title size='h3'>Tasks</Title>
                 <Button
+                    size='xs'
+                    mr={1}
                     loading={tasksLoading}
                     leftIcon={<IconRefresh size="1rem" />}
                     onClick={updateTasksData}>
                     Refresh tasks
                 </Button>
+                {
+                    new Date().getTime() > endDate && authData.signer && authData.userData?.address === owner ?
+                        <Button
+                            size='xs'
+                            color='green'
+                            loading={choosingLoading}
+                            leftIcon={<IconAward size="1rem" />}
+                            onClick={callChooseWinner}>
+                            Choose winner
+                        </Button> : null
+                }
             </Group>
             <Space h='md' />
             <Grid>

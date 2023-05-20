@@ -92,6 +92,28 @@ export async function unparticipate(
     });
 }
 
+export async function chooseWinner(
+    signer: Signer,
+    id: string,
+    addresses: string[]
+) {
+    return invoke(signer, {
+        dApp: ContestAddress,
+        call: {
+            function: 'chooseWinner',
+            args: [{
+                type: 'string',
+                value: id
+            }, {
+                type: 'list',
+                value: addresses.map((t) => {
+                    return {type: 'string', value: t};
+                })
+            }]
+        }
+    });
+}
+
 /**
  * Get all contests data
  */

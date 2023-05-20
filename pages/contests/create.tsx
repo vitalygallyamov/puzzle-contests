@@ -10,10 +10,24 @@ import { SignerContext } from '@/context/SignerContext';
 import { transactionById } from '@waves/waves-transactions/dist/nodeInteraction';
 import { ApiBase } from '@/data/common';
 import { ASSETS, ASSETS_MAP, PUZZLE_ASSET_ID } from '@/data/assets';
+import Breadcrumbs from '@/components/common/Breadcrumbs';
 
 export default function Create() {
     const router = useRouter();
     const {authData} = useContext(SignerContext);
+
+    const breadItems = useMemo(() => {
+        return [{
+            title: 'Puzzlify',
+            href: '#'
+        }, {
+            title: 'Contests',
+            href: '/contests'
+        }, {
+            title: 'Create',
+            href: '/create'
+        }];
+    }, []);
 
     const [name, setName] = useState('');
     const [desc, setDesc] = useState('');
@@ -69,6 +83,8 @@ export default function Create() {
     }
     return (
         <Box>
+            <Breadcrumbs items={breadItems} />
+            <Space h='xl' />
             <Title>Create</Title>
             <Space h='md' />
             <TextInput

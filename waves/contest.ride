@@ -9,6 +9,7 @@ let Status_Draft = "draft"
 let Status_Active = "active"
 let Status_Stop = "stop"
 let Status_Delted = "deleted"
+let Status_Finish = "finish"
 
 # calc prize found string from payments
 func calcPrizeFund(payments: List[AttachedPayment]) = {
@@ -32,6 +33,13 @@ func getPrizeTransfers(prizeFundStr: String, recipient: Address) = {
     accum :+ ScriptTransfer(recipient, parts[1].parseInt().value(), assetId)
   }
   FOLD<10>(prizeFundStr.split_4C("|"), [], calc)
+}
+
+# gen randomNumber
+func getRandomNumber(variants: Int, txId: ByteVector, blockHeight: Int, offset: Int) = {
+  let randomSeedBlock = blockInfoByHeight(blockHeight-1).value()
+  let randomHash = sha256(txId + randomSeedBlock.vrf.value())
+  randomHash.toInt(offset*8) % variants
 }
 
 @Callable(i)
@@ -106,6 +114,39 @@ func unparticipate(contestId: String) = {
       DeleteEntry(ContestIdStr +  "_participantsCount") else
       IntegerEntry(ContestIdStr +  "_participantsCount", participantsCount - 1)
   ]
+}
+
+@Callable(i)
+func chooseWinner(contestId: String, addresses: List[String]) = {
+  let ContestIdStr = ContestPrefix + contestId
+
+  # let status = getString(ContestIdStr + "_status").valueOrErrorMessage("Status not found")
+  let prizeFundStr = getString(ContestIdStr + "_prizeFund").valueOrErrorMessage("Prize fund data not found")
+  let isOwner = match (getString(ContestIdStr + "_owner")) {
+      case t:String => t == i.caller.toString()
+      case _ => throw("Data get owner error")
+    }
+
+  let winnerIndex = getRandomNumber(addresses.size(), i.transactionId, height, 0)
+  let winnerAddressStr = addresses[winnerIndex].valueOrErrorMessage("Invalid winner address")
+
+  let isWinnerParticipate = match (getString(ContestIdStr + "_participant_" + winnerAddressStr + "_address")) {
+      case t:String => true
+      case _ => false
+    }
+  
+  let endHeight = getInteger(ContestIdStr + "_endHeight").valueOrErrorMessage("No end height contest")
+
+  if (!isOwner) then throw("You are not the owner")
+  else if (endHeight < height) then throw("Contest hasn't ended yet")
+  else if (!isWinnerParticipate) then throw("Winnder's address didn't participate")
+  else if (addresses.size() == 0) then throw("Address list is empty")
+  else
+  [
+    StringEntry("winner_" + winnerAddressStr + "_" + ContestIdStr + "_prizeFund", prizeFundStr),
+    StringEntry(ContestIdStr +  "_winnerAddress", winnerAddressStr),
+    StringEntry(ContestIdStr +  "_status", Status_Finish)
+  ] ++ getPrizeTransfers(prizeFundStr, Address(fromBase58String(winnerAddressStr)))
 }
 
 @Callable(i)

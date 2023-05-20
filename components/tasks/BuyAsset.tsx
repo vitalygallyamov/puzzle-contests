@@ -78,10 +78,10 @@ export default function BuyAsset(props: ITaskProps) {
                                             });
                                             return prev + a;
                                         }, 0);
-                                        return <tr key={index}>
+                                        return amount ? <tr key={index}>
                                             <td>{address}</td>
                                             <td>{(amount / Math.pow(10, PUZZLE_ASSET.decimals)).toFixed(2) || 0} Puzzle</td>
-                                        </tr>
+                                        </tr> : null
                                     }
                                 ) :
                                 <tr>

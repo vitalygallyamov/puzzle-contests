@@ -79,17 +79,25 @@ async function checkTask(contest: IContestData, task: string, addresses: string[
                 while(!stopChecking && !isLastPage) {
                     ({data, isLastPage, lastCursor} = await invokeScriptTxs(address, PuzzleSwapDapp, 'swap', lastCursor));
                     for (let j = 0; j < data.length; j++) {
-                        const {height, type} = data[j].data;
+                        const {height, type, id} = data[j].data;
                         if (height >= startHeight && height <= endHeight && type === 16) {
                             let assetExist = false;
                             data[j].data.call?.args.forEach(arg => {
-                                if (typeof arg.value === 'string' && arg.value.indexOf(taskInfo.assetId) > 0) {
+                                if (typeof arg.value === 'string' && arg.value.endsWith(taskInfo.assetId)) {
                                     assetExist = true;
                                 }
                             });
                             if (assetExist) {
-                                // TODO
-                                console.log(data[j].data)
+                                const txInfo = await getTxInfo(id);
+                                txInfo.stateChanges?.transfers?.forEach((transfer) => {
+                                    if (
+                                        transfer.address === address &&
+                                        transfer.amount >= parseInt(taskInfo.amount, 10) &&
+                                        transfer.asset === PUZZLE_ASSET_ID
+                                    ) {
+                                        res[address].push({...data[j].data, stateChanges: txInfo.stateChanges});
+                                    }
+                                });
                             }
                         } else {
                             stopChecking = true;

@@ -13,12 +13,21 @@ interface ICardProps {
 
 export default function ContestCard(props: ICardProps) {
     const {item} = props;
+    const {status} = item;
     const curDate = new Date();
-    const endDate = new Date(item.endDate)
+    const endDate = new Date(item.endDate);
+
+    const getStatusColor = () => {
+        switch (status) {
+            case 'active': return 'green';
+            case 'finish': return 'yellow';
+            default: return 'grey';
+        }
+    };
     return (
         <Card shadow="sm" padding="lg" radius="md" withBorder>
             <Group position="apart" mb="xs">
-                <Text weight={500}>{item.name}</Text>
+                <Text component={Link} href={`/contests/${item.id}`} weight={500}>{item.name}</Text>
                 <Flex align='center'>
                     <Badge variant="filled" title={item.owner} color="indigo">
                         {formatAddress(item.owner)}
@@ -30,9 +39,12 @@ export default function ContestCard(props: ICardProps) {
                         </Flex>
                     </Badge>
                     <Space w="xs" />
-                    <Badge color="green" variant="light">
-                        Active
-                    </Badge>
+                    {
+                        status ? 
+                            <Badge color={getStatusColor()} variant="light">
+                                {status}
+                            </Badge> : null
+                    }
                 </Flex>
             </Group>
 
@@ -66,10 +78,13 @@ export default function ContestCard(props: ICardProps) {
                     </Flex>
                 </Text>
             </Group>
-
-            <Button variant="light" color="indigo" fullWidth mt="md" radius="md" component={Link} href={`/contests/${item.id}`}>
-                Participate
-            </Button>
+            {
+                status === 'active' ?
+                    <Button variant="light" color="indigo" fullWidth mt="md" radius="md" component={Link} href={`/contests/${item.id}`}>
+                        Participate
+                    </Button> : null
+            }
+            
         </Card>
     );
 }

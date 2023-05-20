@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 
 import { useForm } from '@mantine/form';
-import { Group, NumberInput } from '@mantine/core';
+import { Group, NumberInput, Text } from '@mantine/core';
 
 import TaskBox from './TaskBox';
 import {ITaskProps} from './index';
-import { ASSETS_MAP, PUZZLE_ASSET_ID } from '@/data/assets';
+import { ASSETS_MAP, PUZZLE_ASSET, PUZZLE_ASSET_ID } from '@/data/assets';
 
 export default function StakePuzzle(props: ITaskProps) {
+    const {viewProps} = props;
     const form = useForm({
         initialValues: {
             name: '',
@@ -23,15 +24,21 @@ export default function StakePuzzle(props: ITaskProps) {
 
     return (
         <TaskBox {...props}>
-            <Group>
-                <NumberInput
-                    label="Amount Puzzle"
-                    withAsterisk
-                    value={amount}
-                    onChange={(value) => {setAmount(value || 1)}}
-                    min={1}
-                />
-            </Group>
+            {
+                !viewProps ?
+                <Group>
+                    <NumberInput
+                        label="Amount Puzzle"
+                        withAsterisk
+                        value={amount}
+                        onChange={(value) => {setAmount(value || 1)}}
+                        min={1}
+                    />
+                </Group> :
+                <Text>
+                    Buy and stake <Text fw='bold' span>{(parseInt(viewProps.amount, 10) / Math.pow(10, PUZZLE_ASSET.decimals))} {PUZZLE_ASSET.name}</Text> on Puzle Swap
+                </Text>
+            }
         </TaskBox>
     );
 }
