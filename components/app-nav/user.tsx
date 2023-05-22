@@ -12,9 +12,27 @@ export function User() {
   const theme = useMantineTheme();
   const {authData, setAuthData} = useContext(SignerContext);
 
-  const onSeedClick = () => {
+  const onSeedClick = async () => {
     if (!authData.isLogin) {
-        const signer = getSigner('web');
+        const signer = await getSigner('web');
+        signer.login().then((userData) => {
+            setAuthData?.({userData, isLogin: true, signer})
+        });
+    }
+  }
+
+  const onEmailClick = async () => {
+    if (!authData.isLogin) {
+        const signer = await getSigner('email');
+        signer.login().then((userData) => {
+            setAuthData?.({userData, isLogin: true, signer})
+        });
+    }
+  }
+
+  const onKeeperClick = async () => {
+    if (!authData.isLogin) {
+        const signer = await getSigner('keeper');
         signer.login().then((userData) => {
             setAuthData?.({userData, isLogin: true, signer})
         });
@@ -41,8 +59,8 @@ export function User() {
 
             <Menu.Dropdown>
                 <Menu.Label>Connect wallet</Menu.Label>
-                <Menu.Item>Keeper</Menu.Item>
-                <Menu.Item>WX email</Menu.Item>
+                <Menu.Item onClick={onKeeperClick}>Keeper</Menu.Item>
+                <Menu.Item onClick={onEmailClick}>WX email</Menu.Item>
                 <Menu.Item onClick={onSeedClick}>WX seed</Menu.Item>
             </Menu.Dropdown>
         </Menu> :

@@ -33,6 +33,7 @@ export default function StakeWaves(props: ITaskProps) {
                         label="Node Address"
                         placeholder="3P..."
                         withAsterisk
+                        w={310}
                         value={address}
                         onChange={(event) => {
                             setAddress(event.currentTarget.value)

@@ -48,7 +48,7 @@ export default function ContestCard(props: ICardProps) {
                 </Flex>
             </Group>
 
-            <Text size="sm" color="dimmed">
+            <Text size="sm" color="dimmed" lineClamp={3}>
                 {item.desc}
             </Text>
 
