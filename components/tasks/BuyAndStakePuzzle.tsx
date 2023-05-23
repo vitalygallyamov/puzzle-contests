@@ -19,7 +19,7 @@ export default function StakePuzzle(props: ITaskProps) {
     const [amount, setAmount] = useState(1);
 
     useEffect(() => {
-        props.onDataChange?.(`amount:${amount * Math.pow(10, ASSETS_MAP[PUZZLE_ASSET_ID].decimals)}`);
+        props.onDataChange?.(`amount:${amount * Math.pow(10, ASSETS_MAP[PUZZLE_ASSET_ID].precision)}`);
     }, [amount]);
 
     return (
@@ -36,7 +36,7 @@ export default function StakePuzzle(props: ITaskProps) {
                     />
                 </Group> :
                 <Text>
-                    Buy and stake <Text fw='bold' span>{(parseInt(viewProps.amount, 10) / Math.pow(10, PUZZLE_ASSET.decimals))} {PUZZLE_ASSET.name}</Text> on Puzle Swap
+                    Buy and stake <Text fw='bold' span>{(parseInt(viewProps.amount, 10) / Math.pow(10, PUZZLE_ASSET.precision))} {PUZZLE_ASSET.name}</Text> on Puzle Swap
                 </Text>
             }
         </TaskBox>

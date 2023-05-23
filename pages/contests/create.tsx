@@ -33,7 +33,7 @@ export default function Create() {
         initialValues: {
             name: '',
             desc: '',
-            prizeAmount: 1,
+            prizeAmount: 0,
             prizeAsset: PUZZLE_ASSET_ID,
             endDate: new Date(),
             tasksList: '',
@@ -75,7 +75,7 @@ export default function Create() {
                 }
             } else {
                 setUserBalance(null);
-                form.setValues({ prizeAsset: '', prizeAmount: 1 });
+                form.setValues({ prizeAsset: '', prizeAmount: 0 });
             }
         })();
     }, [authData.isLogin]);

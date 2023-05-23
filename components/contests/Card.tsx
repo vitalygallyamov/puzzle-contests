@@ -71,7 +71,7 @@ export default function ContestCard(props: ICardProps) {
                             item.prizeFund.map((item, index) => {
                                 const [assetId, intAmount] = item.split(':');
                                 if (!ASSETS_MAP[assetId]) return null;
-                                const amount = parseInt(intAmount, 10) / Math.pow(10, ASSETS_MAP[assetId].decimals);
+                                const amount = parseInt(intAmount, 10) / Math.pow(10, ASSETS_MAP[assetId].precision);
                                 return <div key={index}>{`${amount} ${ASSETS_MAP[assetId].name}`}</div>;
                             })
                         }

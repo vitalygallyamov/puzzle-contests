@@ -1,46 +1,27 @@
+import AssetsList, { IAssetItem } from './allAssetsList';
+export const WAVES_ID = 'WAVES';
 export const PUZZLE_ASSET_ID = 'HEB8Qaw9xrWpWs8tHsiATYGBWDBtP2S7kcPALrMu43AS';
 export const USDT_PPT_ID = '9wc3LXNA4TEBsXyKtoLE9mrbDD7WMHXvXrCjZvabLAsi';
-export const WAVES_ID = 'WAVES';
+export const EGG_ID = 'C1iWsKGqLwjHUndiQ7iXpdmPum9PeCDFfyXBdJJosDRS';
 
-export const PUZZLE_NAME = 'Puzzle';
-export const USD_PPT_NAME = 'USDT PPT';
 export const WAVES_NAME = 'Waves';
+export const PUZZLE_NAME = 'Puzzle';
+export const USD_PPT_NAME = 'USDT';
+export const EGG_NAME = 'EGG';
 
 export type AssetId = typeof PUZZLE_ASSET_ID | typeof USDT_PPT_ID | typeof WAVES_ID;
 export type AssetName = typeof PUZZLE_NAME | typeof USD_PPT_NAME | typeof WAVES_NAME;
 
-export type AssetInfo = {
-    id: AssetId;
-    name: AssetName;
-    decimals: number;
-}
+export const PUZZLE_ASSET: IAssetItem = AssetsList.find(item => item.id === PUZZLE_ASSET_ID) as IAssetItem;
+export const USDT_PPT_ASSET: IAssetItem = AssetsList.find(item => item.id === USDT_PPT_ID) as IAssetItem;
+export const WAVES_ASSET: IAssetItem = AssetsList.find(item => item.id === WAVES_ID) as IAssetItem;
+export const EGG_ASSET: IAssetItem = AssetsList.find(item => item.id === EGG_ID) as IAssetItem;
 
-export const PUZZLE_ASSET: AssetInfo = {
-    id: PUZZLE_ASSET_ID,
-    name: PUZZLE_NAME,
-    decimals: 8
-};
+export const ASSETS: IAssetItem[] = AssetsList;
 
-export const USDT_PPT_ASSET: AssetInfo = {
-    id: USDT_PPT_ID,
-    name: USD_PPT_NAME,
-    decimals: 6
-};
+const assetMap: {[x: string]: IAssetItem} = {};
+AssetsList.forEach((item) => {
+    assetMap[item.id] = item;
+})
 
-export const WAVES_ASSET: AssetInfo = {
-    id: WAVES_ID,
-    name: WAVES_NAME,
-    decimals: 8
-};
-
-export const ASSETS: AssetInfo[] = [
-    PUZZLE_ASSET,
-    USDT_PPT_ASSET,
-    WAVES_ASSET
-];
-
-export const ASSETS_MAP: {[x: string]: AssetInfo} = {
-    [PUZZLE_ASSET_ID]: PUZZLE_ASSET,
-    [USDT_PPT_ID]: USDT_PPT_ASSET,
-    [WAVES_ID]: WAVES_ASSET,
-};
+export const ASSETS_MAP = assetMap;

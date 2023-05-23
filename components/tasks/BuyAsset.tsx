@@ -21,7 +21,7 @@ export default function BuyAsset(props: ITaskProps) {
     const addresses = Object.keys(userActions || {});
 
     useEffect(() => {
-        props.onDataChange?.(`amount:${amount * Math.pow(10, ASSETS_MAP[assetId].decimals)}|assetId:${assetId}`);
+        props.onDataChange?.(`amount:${amount * Math.pow(10, ASSETS_MAP[assetId].precision)}|assetId:${assetId}`);
     }, [amount, assetId]);
 
     return (
@@ -32,6 +32,7 @@ export default function BuyAsset(props: ITaskProps) {
                     <Select
                         label="Asset"
                         withAsterisk
+                        searchable
                         value={assetId}
                         onChange={(value) => {setAssetId(value || PUZZLE_ASSET_ID)}}
                         data={ASSETS.map(asset => {
@@ -47,7 +48,7 @@ export default function BuyAsset(props: ITaskProps) {
                     />
                 </Group>:
                 <Text>
-                    Buy <Text fw='bold' span>{(parseInt(viewProps.amount, 10) / Math.pow(10, ASSETS_MAP[viewProps.assetId].decimals))} {ASSETS_MAP[viewProps.assetId].name}</Text> on Puzle Swap
+                    Buy <Text fw='bold' span>{(parseInt(viewProps.amount, 10) / Math.pow(10, ASSETS_MAP[viewProps.assetId].precision))} {ASSETS_MAP[viewProps.assetId].name}</Text> on Puzle Swap
                 </Text>
             }
             {
@@ -80,7 +81,7 @@ export default function BuyAsset(props: ITaskProps) {
                                         }, 0);
                                         return amount ? <tr key={index}>
                                             <td>{address}</td>
-                                            <td>{(amount / Math.pow(10, PUZZLE_ASSET.decimals)).toFixed(2) || 0} Puzzle</td>
+                                            <td>{(amount / Math.pow(10, PUZZLE_ASSET.precision)).toFixed(2) || 0} Puzzle</td>
                                         </tr> : null
                                     }
                                 ) :
