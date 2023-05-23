@@ -69,7 +69,9 @@ export default function Create() {
             if (authData.isLogin && authData.signer) {
                 const balances = await authData.signer.getBalance();
                 setUserBalance(balances);
-                form.setValues({ prizeAsset: '' });
+                if (balances.length) {
+                    form.setValues({ prizeAsset: balances[0].assetId });
+                }
             } else {
                 setUserBalance(null);
                 form.setValues({ prizeAsset: '', prizeAmount: 1 });
@@ -163,11 +165,13 @@ export default function Create() {
                     searchable
                     data={
                         userBalance ?
-                            userBalance.map(asset => {
-                                console.log(asset);
-                                return { value: asset.assetId, label: `${asset.assetName} (${(asset.tokens / Math.pow(10, asset.decimals) / Math.pow(10, asset.decimals)).toFixed(2)})` };
-                            }) :
-                            [{value: '', label: 'Please login'}]
+                            (
+                                userBalance.length ?
+                                    userBalance.map(asset => {
+                                        console.log(asset);
+                                        return { value: asset.assetId, label: `${asset.assetName} (${(asset.tokens / Math.pow(10, asset.decimals) / Math.pow(10, asset.decimals)).toFixed(2)})` };
+                                    }) : [{value: '', label: 'Wallet is empty'}]
+                            ) : [{value: '', label: 'Please login'}]
                     }
                     {...form.getInputProps('prizeAsset')}
                 />
