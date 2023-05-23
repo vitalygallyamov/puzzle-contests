@@ -32,7 +32,8 @@ export async function create(
         desc: string,
         endDate: Date,
         tasks: string[],
-        prizeFund: InvokeArgs['payment']
+        prizeFund: InvokeArgs['payment'],
+        beforeWaitCb?: () => void
     ) {
     const curHeight = await nodeInteraction.currentHeight(ApiBase);
     const curDate = new Date();
@@ -57,12 +58,13 @@ export async function create(
             }]
         },
         payment: prizeFund
-    });
+    }, beforeWaitCb);
 }
 
 export async function participate(
     signer: Signer,
-    id: string
+    id: string,
+    beforeWaitCb?: () => void
 ) {
     return invoke(signer, {
         dApp: ContestAddress,
@@ -73,12 +75,13 @@ export async function participate(
                 value: id
             }]
         }
-    });
+    }, beforeWaitCb);
 }
 
 export async function unparticipate(
     signer: Signer,
-    id: string
+    id: string,
+    beforeWaitCb?: () => void
 ) {
     return invoke(signer, {
         dApp: ContestAddress,
@@ -89,13 +92,14 @@ export async function unparticipate(
                 value: id
             }]
         }
-    });
+    }, beforeWaitCb);
 }
 
 export async function chooseWinner(
     signer: Signer,
     id: string,
-    addresses: string[]
+    addresses: string[],
+    beforeWaitCb?: () => void
 ) {
     return invoke(signer, {
         dApp: ContestAddress,
@@ -111,7 +115,7 @@ export async function chooseWinner(
                 })
             }]
         }
-    });
+    }, beforeWaitCb);
 }
 
 /**

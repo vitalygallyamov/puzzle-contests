@@ -1,21 +1,14 @@
 import { useState } from 'react';
 import { AppProps } from 'next/app';
 import Head from 'next/head';
-import { AppShell, MantineProvider, ColorSchemeProvider, ColorScheme, Header, Group, ActionIcon, useMantineColorScheme } from "@mantine/core";
-
-import { IconBuilding, IconCoin, IconSettings, IconUser, IconSun, IconMoonStars } from "@tabler/icons-react";
-import {Signer} from '@waves/signer';
+import { AppShell, MantineProvider, ColorSchemeProvider, ColorScheme } from "@mantine/core";
 
 import { SignerContext, IAuthData } from '../context/SignerContext';
+import { RouterTransition } from '@/components/router/RouterTransition';
+import { Notifications } from '@mantine/notifications';
+
 import AppHeader from "@/components/app-header/AppHeader";
 import AppNav from "@/components/app-nav/AppNav";
-
-const navItemsList = [
-  { icon: <IconUser />, text: "Személyek", link: "/people" },
-  { icon: <IconBuilding />, text: "Szervezetek", link: "/organizations" },
-  { icon: <IconCoin />, text: "Tagdíjak", link: "/fees" },
-  { icon: <IconSettings />, text: "Beállítások", link: "/settings" },
-];
 
 export default function App(props: AppProps & { colorScheme: ColorScheme }) {
   const { Component, pageProps } = props;
@@ -38,6 +31,8 @@ export default function App(props: AppProps & { colorScheme: ColorScheme }) {
         withNormalizeCSS
         theme={{ colorScheme }}
       >
+        <Notifications />
+        <RouterTransition />
         <AppShell
             padding="md"
             fixed={false}

@@ -2,6 +2,7 @@ import { useContext, useEffect, useMemo, useState } from 'react';
 import { useForm } from '@mantine/form';
 import { Title, TextInput, Space, Box, Textarea, Button, NumberInput, Group, Select, Divider, SimpleGrid, Text } from "@mantine/core";
 import { DateTimePicker } from '@mantine/dates';
+import { notifications } from '@mantine/notifications';
 
 import { useRouter } from 'next/router';
 
@@ -110,23 +111,34 @@ export default function Create() {
 
     const submit = async (values: FormValues) => {
         if (authData.signer && userBalance && form.isValid()) {
-            setIsSending(true);
             try {
                 const assetDecimals = userBalance.find(asset => asset.assetId === values.prizeAsset).decimals
                 const tx: any = await create(authData.signer, values.name, values.desc, values.endDate, contestTasksData, [{
                     assetId: values.prizeAsset,
                     amount: values.prizeAmount * Math.pow(10, assetDecimals)
-                }]);
+                }], () => {
+                    setIsSending(true);
+                });
                 setIsSending(false);
                 if (tx?.stateChanges?.data?.length) {
                     const lastIdData = tx?.stateChanges?.data.find((d: any) => d.key === 'last_contest_id');
                     if (lastIdData.value > 0) {
+                        notifications.show({
+                            title: 'Success',
+                            color: 'green',
+                            message: `Contest "${values.name}" created`
+                        });
                         router.replace(`/contests/${lastIdData.value - 1}`);
                     }
                 }
-            } catch (e) {
+            } catch (e: any) {
                 setIsSending(false);
                 console.error(e);
+                notifications.show({
+                    title: 'Error',
+                    color: 'red',
+                    message: e?.message
+                });
             }
         }
     }

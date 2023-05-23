@@ -1,11 +1,14 @@
+import axios from 'axios';
+import moment from 'moment';
+
 import { IContestData, chooseWinner, getById, participate, unparticipate } from '@/bl/contest';
 import { Tasks, getTask } from '@/components/tasks';
 import { SignerContext } from '@/context/SignerContext';
 import { ASSETS_MAP } from '@/data/assets';
 import { Box, Space, Text, Title, Grid, Button, Group, Table, ThemeIcon, Divider, Badge } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import { IconAward, IconRefresh, IconTrophy } from '@tabler/icons-react';
-import axios from 'axios';
-import moment from 'moment';
+
 import { GetServerSidePropsContext } from 'next';
 import { useRouter } from 'next/router';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
@@ -59,7 +62,10 @@ export default function Page(props: IContestPageProps) {
             const addressSet = new Set(...addresses);
             // if (addressSet.size > 0) {
                 setChoosingLoading(true);
-                chooseWinner(authData.signer, id, Array.from(addressSet)).finally(() => setChoosingLoading(false));
+                chooseWinner(authData.signer, id, Array.from(addressSet), () => {
+                    setChoosingLoading(true);
+                })
+                .finally(() => setChoosingLoading(false));
             // }
         }
     }, [id, authData.signer, tasksData]);
@@ -70,9 +76,18 @@ export default function Page(props: IContestPageProps) {
             params: {
                 id
             }
-        }).then(data => {
+        })
+        .then(data => {
             setTasksData(data.data);
-        }).finally(() => setTaskLoading(false))
+        })
+        .catch((e) => {
+            notifications.show({
+                title: 'Error',
+                color: 'red',
+                message: e?.message
+            });
+        })
+        .finally(() => setTaskLoading(false))
     }, [id]);
 
     useEffect(() => {
@@ -140,16 +155,18 @@ export default function Page(props: IContestPageProps) {
                             participants.indexOf(authData.userData?.address) >= 0 ?
                             <Button color="yellow" loading={startParticipate} onClick={() => {
                                 if (authData.signer) {
-                                    setStartParticipate(true);
-                                    unparticipate(authData.signer, id).then(() => {
+                                    unparticipate(authData.signer, id, () => {
+                                        setStartParticipate(true);
+                                    }).then(() => {
                                         refreshData();
                                     }).finally(() => setStartParticipate(false));
                                 }
                             }}>Go out</Button> :
                             <Button color="green" loading={startParticipate} onClick={() => {
                                 if (authData.signer) {
-                                    setStartParticipate(true);
-                                    participate(authData.signer, id).then(() => {
+                                    participate(authData.signer, id, () => {
+                                        setStartParticipate(true);
+                                    }).then(() => {
                                         refreshData();
                                     }).finally(() => setStartParticipate(false));
                                 }

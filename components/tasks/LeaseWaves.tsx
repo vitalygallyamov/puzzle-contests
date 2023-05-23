@@ -5,7 +5,6 @@ import { Group, Text, TextInput, Space, Title, Table } from '@mantine/core';
 
 import TaskBox from './TaskBox';
 import {ITaskProps} from './index';
-import { IconRefresh } from '@tabler/icons-react';
 
 export default function StakeWaves(props: ITaskProps) {
     const form = useForm({
