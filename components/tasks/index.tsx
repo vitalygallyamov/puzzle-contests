@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
 import BuyAsset from './BuyAsset';
-import BuyAndStakePuzzle from './BuyAndStakePuzzle';
+import StakePuzzle from './StakePuzzle';
 import LeaseWaves from './LeaseWaves';
 import { IDataTransaction } from '@/utils/wdsApi';
 
@@ -22,7 +22,11 @@ export const Tasks = [{
 }, {
     id: 'buy-and-stake-puzzle',
     name: 'Stake Puzzle',
-    hint: 'Buy and staker the specified number of tokens on Puzzle Swap and keep them until the end of the contest'
+    hint: 'Stake the specified number of tokens on Puzzle Swap and keep them until the end of the contest'
+}, {
+    id: 'stake-puzzle',
+    name: 'Stake Puzzle',
+    hint: 'Stake the specified number of tokens on Puzzle Swap and keep them until the end of the contest'
 }, {
     id: 'lease-waves',
     name: 'Lease Waves',
@@ -33,8 +37,9 @@ export const getTask = (id: string, props: ITaskProps): ReactElement => {
     switch (id) {
         case 'buy-asset-puzzle-swap':
             return <BuyAsset {...props}/>
+        case 'stake-puzzle':
         case 'buy-and-stake-puzzle':
-            return <BuyAndStakePuzzle {...props}/>
+            return <StakePuzzle {...props}/>
         case 'lease-waves':
             return <LeaseWaves {...props}/>
     }

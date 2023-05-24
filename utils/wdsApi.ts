@@ -1,6 +1,7 @@
 // waves data service
 
 import axios from "axios";
+import qs from "querystring";
 
 const API_NODE_URL = 'https://nodes.wavesnodes.com/';
 const API_URL = 'https://api.wavesplatform.com/v0/';
@@ -25,6 +26,10 @@ export interface IDataTransaction {
         function: string;
         args: {value: string|number}[];
     }
+    payment?: {
+        amount: number;
+        assetId: string;
+    }[];
     stateChanges?: {
         transfers: {
             address: string;
@@ -35,39 +40,41 @@ export interface IDataTransaction {
 }
 
 export function leaseTxs(
-    sender: string,
+    senders: string[],
     after: string|void,
     sort: string = 'desc',
     limit: number = 100
 ) {
     return axios.get<IDataServiceResponse>(`${API_URL}transactions/lease`, {
         params: {
-            sender,
+            senders,
             sort,
             limit,
             after
-        }
+        },
+        paramsSerializer: params => qs.stringify(params)
     }).then((res) => res.data);
 }
 
 export function leaseCancelTxs(
-    sender: string,
+    senders: string[],
     after: string|void,
     sort: string = 'desc',
     limit: number = 100
 ) {
     return axios.get<IDataServiceResponse>(`${API_URL}transactions/lease-cancel`, {
         params: {
-            sender,
+            senders,
             sort,
             limit,
             after
-        }
+        },
+        paramsSerializer: params => qs.stringify(params)
     }).then((res) => res.data);
 }
 
 export function invokeScriptTxs(
-    sender: string,
+    senders: string[],
     dapp: string,
     fn: string,
     after: string|void,
@@ -76,13 +83,14 @@ export function invokeScriptTxs(
 ) {
     return axios.get<IDataServiceResponse>(`${API_URL}transactions/invoke-script`, {
         params: {
-            sender,
+            senders,
             sort,
             limit,
             after,
             dapp,
             function: fn
-        }
+        },
+        paramsSerializer: params => qs.stringify(params)
     }).then((res) => res.data);
 }
 

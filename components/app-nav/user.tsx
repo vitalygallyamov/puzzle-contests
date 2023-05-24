@@ -2,6 +2,7 @@ import React, {useContext, useMemo} from 'react';
 import { IconLogout } from '@tabler/icons-react';
 import { UnstyledButton, Group, Avatar, Text, Box, useMantineTheme, rem, ThemeIcon} from '@mantine/core';
 import { Menu, Button } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
 import * as identityImg from "identity-img";
 
 import {getSigner} from '@/utils/signer';
@@ -85,14 +86,23 @@ export function User() {
                 },
                 }}
             >
-                <Group>
+                <Group onClick={() => {
+                    if (authData.userData?.address && navigator?.clipboard) {
+                        navigator.clipboard.writeText(authData.userData.address).then(() => {
+                            notifications.show({
+                                title: 'Copied',
+                                message: 'Аddress copied',
+                                color: 'green'
+                            });
+                        });
+                    }
+                }}>
                 <Avatar
                     src={avatarSrc}
                     radius="xl"
                 />
                 <Box sx={{ flex: 1 }}>
                     <Text title={authData.userData?.address} size="sm" weight={500}>{formatAddress(authData.userData?.address || '')}</Text>
-                    
                 </Box>
                 <ThemeIcon variant="outline" size="sm" color="gray">
                     <IconLogout onClick={logout} />

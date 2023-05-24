@@ -223,7 +223,6 @@ export default function Page(props: IContestPageProps) {
                 }
             </Grid>
             <Space h='md' />
-            
         </Box>
     );
 }
